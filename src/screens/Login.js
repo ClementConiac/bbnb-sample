@@ -1,15 +1,40 @@
-import React, {Component} from 'react';
-import {Text, View, Button, TouchableOpacity} from 'react-native';
+import React, { Component } from 'react';
+import { Text, View, Button, TouchableOpacity } from 'react-native';
 import stylesCo from './stylesCo';
 import Input from '../components/Input'; //Intégration du composants Input
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { AsyncStorage } from 'react-native'
 
 export default class Login extends Component {
   state = {
     displayPassword: false,
   };
 
-  static navigationOptions = ({navigation}) => ({
+  login = () => {
+    const { password, email } = this.state
+    return fetch('https://bbnb-booking.now.sh/api/users/signIn', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        // sauvegarde du token dabs le local storage
+        return AsyncStorage
+          .setItem('userToken', response.authorization)
+          .then(() => {
+            this.props.navigation.navigate('ExploreContainer')
+          })
+      })
+  }
+
+  static navigationOptions = ({ navigation }) => ({
     header: props => (
       <View style={stylesCo.containerConnect}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -20,7 +45,7 @@ export default class Login extends Component {
     ),
   });
   render() {
-    const {navigation} = this.props;
+    const { navigation } = this.props;
     return (
       <View style={stylesCo.structGlobal}>
         <Text style={stylesCo.titre}>Connexion</Text>
